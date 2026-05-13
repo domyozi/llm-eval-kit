@@ -1,0 +1,13 @@
+{
+  "label": "baseline-main",
+  "model": "claude-haiku-4-5-20251001",
+  "pair_count": 7,
+  "error_count": 0,
+  "avg_total": 3.43,
+  "avg_by_dimension": {
+    "relevance": 3.57,
+    "specificity": 2.86,
+    "actionability": 2.71,
+    "tone_fit": 4.57
+  }
+}
