@@ -149,7 +149,10 @@ LLMs are probabilistic; never rely on a single layer of "the prompt will tell it
 ## TL;DR for hiring conversation
 
 - I shipped an eval pipeline that turned "feels better" into "+0.37 / 5 measured" for a
-  1-line prompt change
+  1-line prompt change in the BusyBoy production deployment
+- Extracted the framework as [claude-eval-kit](../..) (public, MIT) and demonstrated the
+  same loop **publicly** in [PR #1](https://github.com/domyozi/claude-eval-kit/pull/1) —
+  vanilla prompt 3.43 → improved 4.11 (**+0.68, +19.8%**), `actionability` +1.43
 - The system is in production, integrated with CI, and runs on every prompt PR
 - I made deliberate non-choices (no LangChain) and can defend them
 - The defense-in-depth design philosophy carries over to any LLM-app I'd build next

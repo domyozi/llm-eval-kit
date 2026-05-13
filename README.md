@@ -3,13 +3,34 @@
 A lightweight LLM-as-judge framework for evaluating Claude responses with a pluggable rubric,
 replay mode, and GitHub Actions integration.
 
-[![CI](https://github.com/YOUR-USERNAME/claude-eval-kit/actions/workflows/eval.yml/badge.svg)](https://github.com/YOUR-USERNAME/claude-eval-kit/actions/workflows/eval.yml)
+[![CI](https://github.com/domyozi/claude-eval-kit/actions/workflows/eval.yml/badge.svg)](https://github.com/domyozi/claude-eval-kit/actions/workflows/eval.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > **Why this exists**: LLM responses are probabilistic; eyeballing diffs doesn't tell you
 > whether a prompt change actually improved quality. This kit lets you score
 > `(user_input, ai_response)` pairs against a rubric, replay the same inputs against a
 > new prompt, and **detect regressions automatically in CI**.
+
+---
+
+## In action
+
+A live demo PR ([#1](https://github.com/domyozi/claude-eval-kit/pull/1)) adds two concreteness
+rules to the default prompt. CI runs the eval, judges 7 fixed user inputs against the new prompt,
+diffs against the committed baseline, and posts the result as a sticky PR comment:
+
+![CI PR comment showing automated eval diff](docs/assets/pr-comment.png)
+
+| dimension     | baseline | current | Δ |
+|---------------|----------|---------|---|
+| actionability | 2.71     | 4.14    | 🟢 **+1.43** |
+| specificity   | 2.86     | 4.14    | 🟢 **+1.28** |
+| relevance     | 3.57     | 3.71    | 🟢 +0.14 |
+| tone_fit      | 4.57     | 4.43    | 🔴 -0.14 |
+| **avg_total** | **3.43** | **4.11** | 🟢 **+0.68 (+19.8%)** |
+
+A 1-line prompt change → measurable quality improvement detected automatically on PR open.
+That's the entire pitch of this kit.
 
 ---
 
