@@ -113,20 +113,25 @@ def filter_by_user_input(payload, user_input):
 ```
 
 The two layers serve different purposes:
-- Layer 1 trains the model to behave (works ~95% of the time)
-- Layer 2 catches the remaining 5% so the user-visible behavior is 100% safe
+- Layer 1 shapes typical model behavior toward the desired pattern
+- Layer 2 catches **most remaining cases in this class** of failure that the prompt
+  doesn't reliably prevent
 
-I see this as the **right shape for any LLM-app feature** that has side effects.
-LLMs are probabilistic; never rely on a single layer of "the prompt will tell it not to."
+This is the **right shape for any LLM-app feature with side effects**: never rely on a
+single layer of "the prompt will tell the model not to." LLMs are probabilistic; some
+fraction of outputs will violate even well-written rules.
 
 The reasoning here comes from B2B AI experience, not from this project alone:
 
-> "確率論的なものについては、確率の低い事象を引く可能性は絶対に起こり得る。
-> このプロジェクト以外でも、自分自身が今携わっている業務の中で何度も目にし、
-> 感じているところ。… B2B 向けの AI 実装に携わっていく中では、その影響が次の
-> 部署であったり、最終的には対外・対顧客向けにまで広がる可能性もあります。
-> そのため『LLM がルールに従う』という期待に頼るのではなく、仮にルールに従わ
-> なかった際においても問題なく業務が回る設計の重要性を学んでいます。"
+> Probabilistic systems will eventually hit their low-probability outcomes — it is not
+> a question of if, it is a question of when. Across other AI work I've seen this
+> repeatedly. In B2B AI deployment, one bad output can propagate to the next team and
+> ultimately to the end customer. So instead of relying on "the LLM will follow the
+> rule," the design has to assume the rule will be broken sometimes and still keep
+> operating safely (detecting the anomaly, routing to a fallback path, or escalating
+> to a human).
+>
+> *(原文: 「確率論的なものについては、確率の低い事象を引く可能性は絶対に起こり得る。… B2B 向けの AI 実装に携わっていく中では、その影響が次の部署であったり、最終的には対外・対顧客向けにまで広がる可能性もあります。そのため『LLM がルールに従う』という期待に頼るのではなく、仮にルールに従わなかった際においても問題なく業務が回る設計の重要性を学んでいます」)*
 
 ## Iteration: how the memory-write threshold drifted from 0.6 to 0.7
 
@@ -143,10 +148,11 @@ The implementation went through this loop:
    to keep watching eval scores **and** the accept/reject rate of suggested actions, and
    adjust as more data accumulates.
 
-> "実際、これまではスコア 0.6 以上を確信ゲートとして一番上に設け、直接適用するように
-> していたが、それだとあまりにも強すぎたため、現在は 0.7 に抑えるといったループ的な
-> 評価と実装を繰り返し、今の形に落ち着いている。一方で、ここについてはまだ検討の
-> 余地があると考えている。"
+> Initially the top tier was `≥0.6` confidence → auto-apply. In practice that proved
+> too aggressive, so the threshold was lowered to `0.7`. This kind of evaluate-and-tune
+> loop is still ongoing — the current numbers are not final.
+>
+> *(原文: 「実際、これまではスコア 0.6 以上を確信ゲートとして一番上に設け、直接適用するようにしていたが、それだとあまりにも強すぎたため、現在は 0.7 に抑えるといったループ的な評価と実装を繰り返し、今の形に落ち着いている。一方で、ここについてはまだ検討の余地があると考えている」)*
 
 This is the kind of iteration an eval pipeline makes legible. Without one, "this threshold
 feels too aggressive" stays as a hunch in someone's head; with one, it becomes a number

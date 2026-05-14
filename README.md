@@ -11,6 +11,14 @@ replay mode, and GitHub Actions integration.
 > `(user_input, ai_response)` pairs against a rubric, replay the same inputs against a
 > new prompt, and **detect regressions automatically in CI**.
 
+## What this demonstrates
+
+- Built a production eval loop for Claude-based applications
+- Designed replay-based prompt regression testing
+- Integrated evals into GitHub Actions CI
+- Measured **+9.4% quality improvement** from a one-line prompt change (case study below)
+- Applied **defense-in-depth guardrails** for probabilistic LLM behavior
+
 ---
 
 ## Why this matters (long form)
@@ -30,10 +38,12 @@ replies to single-word user inputs like `OK!` and over-quote past memory in unre
 turns. The instruction "don't reply long to short inputs" **was already in the prompt** —
 buried in line 359 of dense rules. Humans miss this. Eval surfaces it.
 
-> "プロンプトの量が非常に膨大だったこともあり、例えば「OK」のような端的な回答に
-> 対しても非常に長文で返してしまったり、過去のメモリ情報を参照しすぎて返答して
-> しまったりといった事象が発生していました。… 大量のプロンプトの中にその指示が
-> 埋没していたことが原因。" — developer note
+> The prompt had grown so large that even short user inputs like `OK` got long-form
+> replies, and past memory was over-cited in unrelated turns. The instruction "stay
+> short on short inputs" was already in the prompt — just buried somewhere in the
+> mass of rules. — developer note
+>
+> *(原文: 「プロンプトの量が非常に膨大だったこともあり、例えば「OK」のような端的な回答に対しても非常に長文で返してしまったり、過去のメモリ情報を参照しすぎて返答してしまったりといった事象が発生していました。… 大量のプロンプトの中にその指示が埋没していたことが原因」)*
 
 ### Why LLM-as-judge (not human eval)
 
@@ -42,6 +52,14 @@ The kit does **not** claim to replace human evaluation. It claims to make human 
 "did this PR move the average score?" without asking a human. Humans get pulled in for
 the worst examples (where the judge flags low confidence) and for periodic calibration
 between judge model and reality.
+
+> **Known limitation**: the default judge is Claude Haiku — the same model family as the
+> response generator in many real apps. Same-family judging is cheaper and faster but has
+> documented bias issues (fawning toward similar response patterns, shared blind spots).
+> The kit's design assumption is that this is *acceptable as a screening signal*, not as
+> ground truth. For decisions that matter, pair with periodic human review or a
+> cross-model ensemble (Sonnet judging Haiku, or external models). The architecture
+> supports swapping the judge model trivially via the `--model` CLI flag.
 
 ### Why replay matters
 
