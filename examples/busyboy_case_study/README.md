@@ -82,14 +82,34 @@ impossible to communicate to a team.
 
 ## Worst-example analysis → defense-in-depth guards
 
-The baseline run surfaced another problem:
+The baseline run surfaced something more serious than a score regression — it
+surfaced a **trust-breaking interaction pattern**. From the developer's own notes:
 
-> User types `OK!` (just confirming a previous turn) → AI generates 4 unrelated
-> proposals AND rewrites the `memory_patch.profile.family` field with pregnancy info
-> that the user had deliberately removed.
+> I had reviewed and accepted several AI-suggested memory updates, then noticed a
+> few entries I didn't want kept in my profile and manually deleted them. Later,
+> during eval testing, I sent a few short turns like `OK` or `いいね` — and the AI
+> suggested **putting that exact deleted information back**, in its pre-edit form.
+>
+> The first feeling wasn't "this is a UX bug." It was: **"Is the AI trying to force
+> this on me? Can I actually trust this?"** Then the second thought: this is fine
+> when it's just me using it, but the MVP is going out to my wife and a few close
+> friends. The moment one of them thinks "this is creepy," that AI is done. They
+> won't open it again.
+>
+> Convenience comes after trust. An AI that surfaces things the user wanted kept
+> private or removed crosses a line that, in my view, must be defended absolutely.
+>
+> *(原文要旨: 「自分自身でメモリを許可し更新した際、その情報の中に『プロフィールとしては載せたくない』と思うものがあり、後から手動で修正・削除した。しかし、LLM-as-Judge のタイミングで『OK』や『いいね』と反応したところ、削除したはずの情報を改修前の状態で推奨してきた。『AIが自分にこれを強要しようとしているのでは』『本当に信頼していいのか』という疑念に繋がった。MVP として妻や旧友たちに使ってもらい始めているが、『気味が悪い』と思われた瞬間にそのAIは絶対に使われなくなる」)*
 
-The 700-line prompt **did** contain a rule covering this (`"純粋な相槌では JSON を出さない"`),
-but it was buried in line 359 of dense text. The AI didn't follow it.
+A related failure surfaced in the same window: during morning journaling — just
+writing thoughts and reflections, no explicit requests — the AI produced **about
+ten proposal cards at once**. The volume itself made the human gate useless:
+nobody actually reviews ten cards during a busy morning, so approve / ignore
+becomes reflex. The gate stops gating.
+
+The 700-line prompt **did** contain a rule covering minimal inputs
+(`"純粋な相槌では JSON を出さない"`), but it was buried on line 359 of dense rules,
+and the model couldn't keep it in focus.
 
 Fix: two layers of guards.
 
