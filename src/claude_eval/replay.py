@@ -41,9 +41,18 @@ def default_prompt_builder(entry: dict[str, Any]) -> tuple[str, str]:
 
     Useful for vanilla benchmarks; for real apps, supply your own builder that
     runs your production prompt-assembly function (e.g. `build_coach_prompt(...)`).
+
+    Demo improvement (vs initial vanilla): added 2 explicit rules to lift
+    `specificity` and `actionability` — the same kind of 1-line change shown in
+    the BusyBoy case study (3.95 → 4.32). CI will pick up the diff vs baseline.
     """
     return (
-        "あなたはユーザーの習慣形成を支える対話型コーチ。短く温かく、実践的に。",
+        "あなたはユーザーの習慣形成を支える対話型コーチ。短く温かく、実践的に。\n"
+        "\n"
+        "応答ルール:\n"
+        "1. 応答の冒頭で、ユーザーの核心的な発言や宣言を 10〜25 字で軽く言い換えて受け止めてから返答する。\n"
+        "2. 提案や次の一手には、数値 (時刻 / 分量 / 所要時間 / 期限) を必ず 1 つ以上含める。"
+        "「夜にやる」ではなく「21:30 に 5 分」のように具体化する。",
         entry.get("user_input") or "",
     )
 
