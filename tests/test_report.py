@@ -1,7 +1,7 @@
 """Unit tests for report formatting (no Anthropic call)."""
 from __future__ import annotations
 
-from claude_eval.report import compare_with_baseline, format_comparison_markdown
+from llm_eval.report import compare_with_baseline, format_comparison_markdown
 
 
 def test_compare_no_regression():

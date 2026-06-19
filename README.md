@@ -1,9 +1,10 @@
-# claude-eval-kit
+# llm-eval-kit
 
-A lightweight LLM-as-judge framework for evaluating Claude responses with a pluggable rubric,
-replay mode, and GitHub Actions integration.
+A lightweight LLM-as-judge framework for evaluating an LLM's responses with a pluggable rubric,
+replay mode, and GitHub Actions integration. The judge model is swappable via the `--model`
+CLI flag; the bundled defaults target the Anthropic SDK.
 
-[![CI](https://github.com/domyozi/claude-eval-kit/actions/workflows/eval.yml/badge.svg)](https://github.com/domyozi/claude-eval-kit/actions/workflows/eval.yml)
+[![CI](https://github.com/domyozi/llm-eval-kit/actions/workflows/eval.yml/badge.svg)](https://github.com/domyozi/llm-eval-kit/actions/workflows/eval.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > **Why this exists**: LLM responses are probabilistic; eyeballing diffs doesn't tell you
@@ -13,7 +14,7 @@ replay mode, and GitHub Actions integration.
 
 ## What this demonstrates
 
-- Built a production eval loop for Claude-based applications
+- Built a production eval loop for LLM-based applications (Anthropic SDK by default; judge model swappable via `--model`)
 - Designed replay-based prompt regression testing
 - Integrated evals into GitHub Actions CI
 - Measured **+9.4% quality improvement** from a one-line prompt change (case study below)
@@ -115,7 +116,7 @@ depth means owning the layer that's right for the threat.
 
 ## In action
 
-A live demo PR ([#1](https://github.com/domyozi/claude-eval-kit/pull/1)) adds two concreteness
+A live demo PR ([#1](https://github.com/domyozi/llm-eval-kit/pull/1)) adds two concreteness
 rules to the default prompt. CI runs the eval, judges 7 fixed user inputs against the new prompt,
 diffs against the committed baseline, and posts the result as a sticky PR comment:
 
@@ -138,7 +139,7 @@ That's the entire pitch of this kit.
 
 ```python
 import asyncio
-from claude_eval import (
+from llm_eval import (
     JudgePair, judge_pair, RUBRIC_COACH,
 )
 
@@ -199,7 +200,7 @@ The replay mode accepts a `PromptBuilder` protocol so you can plug in your produ
 prompt assembly. Example:
 
 ```python
-from claude_eval.replay import replay_and_pair
+from llm_eval.replay import replay_and_pair
 
 def my_prompt_builder(entry):
     # entry is a dict from your fixture
@@ -222,7 +223,7 @@ pairs = await replay_and_pair(
 flowchart LR
   J["(user_input, ai_response) pair"] --> JS["judge: system prompt + rubric XML<br/>(anchor examples per dimension)"]
   J --> JU["judge: user message<br/>&lt;eval_pair&gt; ... &lt;/eval_pair&gt;"]
-  JS --> A["Anthropic Claude<br/>(judge model — Haiku by default)"]
+  JS --> A["judge LLM<br/>(Anthropic Claude Haiku by default, swappable via --model)"]
   JU --> A
   A -->|"&lt;observation&gt; → &lt;scores&gt; JSON"| P["parser<br/>(brace-counting + raw_decode)"]
   P --> R["JudgeResult<br/>per-dim score + rationale + total"]
@@ -234,7 +235,7 @@ flowchart LR
 ```mermaid
 flowchart TD
   F["fixture JSON<br/>fixed user_inputs"] --> PB["PromptBuilder (pluggable)<br/>entry → (system, user)"]
-  PB -->|"current prompt code"| ANT["Anthropic SDK<br/>fresh AI response"]
+  PB -->|"current prompt code"| ANT["target LLM<br/>(Anthropic SDK by default)<br/>fresh response"]
   ANT --> JF["judge each pair<br/>(eval flow above, in parallel)"]
   JF --> SUM["summary JSON<br/>+ markdown report"]
   SUM --> BD["baseline.json diff"]
@@ -267,12 +268,12 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ```bash
 # One-shot eval against the bundled fixture
-python -m claude_eval.cli \
+python -m llm_eval.cli \
   --fixture fixtures/sample_pairs.json \
   --label "exploratory"
 
 # Diff against a stored baseline (CI use case)
-python -m claude_eval.cli \
+python -m llm_eval.cli \
   --fixture fixtures/sample_pairs.json \
   --label "pr-current" \
   --baseline fixtures/baseline.json \
@@ -282,20 +283,21 @@ python -m claude_eval.cli \
 
 # Snapshot the current scores as the new baseline
 # (run on main after a prompt PR has merged)
-python -m claude_eval.cli \
+python -m llm_eval.cli \
   --fixture fixtures/sample_pairs.json \
   --update-baseline fixtures/baseline.json
 ```
 
-Cost: 1 pair ≈ $0.003 on Claude Haiku for both replay + judge. The bundled 7-pair fixture
-costs roughly $0.04 per full run.
+Cost: 1 pair ≈ $0.003 on the default judge (Claude Haiku) for both replay + judge. The
+bundled 7-pair fixture costs roughly $0.04 per full run. Swap the judge with `--model` to
+trade cost/quality.
 
 ---
 
 ## GitHub Actions
 
 Drop `.github/workflows/eval.yml` (included) into your repo. On every PR that touches
-`src/claude_eval/**` or `fixtures/**`, the workflow:
+`src/llm_eval/**` or `fixtures/**`, the workflow:
 
 1. Installs the package
 2. Runs unit tests
@@ -341,7 +343,7 @@ analysis, and CI integration.
 ## Customizing the rubric
 
 ```python
-from claude_eval import Rubric, RubricDimension
+from llm_eval import Rubric, RubricDimension
 
 my_rubric = Rubric(
     dimensions=(

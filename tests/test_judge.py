@@ -1,11 +1,11 @@
-"""Unit tests for claude_eval.judge (pure logic, no Anthropic call)."""
+"""Unit tests for llm_eval.judge (pure logic, no LLM API call)."""
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from claude_eval.judge import (
+from llm_eval.judge import (
     DimensionScore,
     JudgePair,
     JudgeResult,
@@ -14,7 +14,7 @@ from claude_eval.judge import (
     judge_pair,
     summarize,
 )
-from claude_eval.rubric import RUBRIC_COACH
+from llm_eval.rubric import RUBRIC_COACH
 
 
 # ────────────────────── JSON extraction ──────────────────────
@@ -94,7 +94,7 @@ async def test_judge_pair_success_mocked():
   "tone_fit": {"score": 5, "rationale": "ok"}
 }
 </scores>"""
-    with patch("claude_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
+    with patch("llm_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
         result = await judge_pair(pair)
     assert result.ok
     assert len(result.scores) == 4
@@ -114,7 +114,7 @@ async def test_judge_pair_invalid_score_3():
   "tone_fit": {"score": 5, "rationale": "r"}
 }
 </scores>"""
-    with patch("claude_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
+    with patch("llm_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
         result = await judge_pair(pair)
     assert not result.ok
     assert result.error and "invalid score" in result.error
@@ -128,7 +128,7 @@ async def test_judge_pair_missing_dimension():
  "specificity": {"score": 4, "rationale": "r"},
  "tone_fit": {"score": 5, "rationale": "r"}}
 </scores>"""
-    with patch("claude_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
+    with patch("llm_eval.judge._call_anthropic", new=AsyncMock(return_value=fake)):
         result = await judge_pair(pair)
     assert not result.ok
     assert result.error and "missing dimension" in result.error

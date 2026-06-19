@@ -1,7 +1,7 @@
 """CLI for replay-mode eval. Designed to be the CI entrypoint.
 
 Usage:
-    python -m claude_eval.cli \\
+    python -m llm_eval.cli \\
         --fixture path/to/fixture.json \\
         --label "pr-current" \\
         --baseline path/to/baseline.json \\
@@ -41,7 +41,7 @@ from .rubric import RUBRIC_COACH
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="claude-eval", description="LLM-as-judge replay CLI")
+    p = argparse.ArgumentParser(prog="llm-eval", description="LLM-as-judge replay CLI")
     p.add_argument("--fixture", required=True, help="JSON array of {id, user_input, context?}")
     p.add_argument("--label", default="replay")
     p.add_argument("--model", default=DEFAULT_JUDGE_MODEL)
@@ -60,7 +60,7 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "Dotted import path to a callable `(entry: dict) -> (system, user)`. "
-            "Defaults to claude_eval.replay.default_prompt_builder."
+            "Defaults to llm_eval.replay.default_prompt_builder."
         ),
     )
     return p.parse_args()

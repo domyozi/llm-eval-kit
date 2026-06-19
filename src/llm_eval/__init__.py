@@ -1,4 +1,4 @@
-"""claude-eval-kit: LLM-as-judge framework for evaluating AI response quality.
+"""llm-eval-kit: LLM-as-judge framework for evaluating the target model's response quality.
 
 Public surface:
     Rubric, RubricDimension, RUBRIC_COACH
